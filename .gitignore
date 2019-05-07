@@ -1,2 +1,5 @@
 /projects/unix/_obj*/
 /projects/unix/libmupen64plus*.so*
+
+# Snap builds
+*.snap

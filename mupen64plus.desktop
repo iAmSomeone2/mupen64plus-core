@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application;Game;Emulator;
+Name=Mupen64+
+Comment=Mupen64+ Nintendo 64 Emulator
+Exec=$SNAP/bin/m64py
+Icon=$SNAP/data/Mupen64plus.svg
+Terminal=false
