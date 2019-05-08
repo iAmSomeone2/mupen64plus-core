@@ -1,9 +1,9 @@
-name: mupen64plus # you probably want to 'snapcraft register <name>'
+name: mupen64plus
 title: "Mupen64Plus"
 icon: data/Mupen64plus.svg
-base: core18 # the base snap is the execution environment for this snap
-version: '2.5.9' # just for humans, typically '1.2+git' or '1.3.2'
-summary: Mupen64Plus is based off of mupen64, originally created by Hacktarux # 79 char long summary
+base: core18
+version: '2.5.9'
+summary: Mupen64Plus is based off of mupen64, originally created by Hacktarux
 description: |
   Mupen64Plus is a Nintendo 64 emulator based off of mupen64, originally 
   created by Hacktarux. This snap version includes Mupen64Core and all
@@ -17,9 +17,21 @@ architectures:
     run-on: [amd64, arm64]
 
 apps:
+  mupen64plus:
+    command: usr/local/bin/mupen64plus
+    plugs:
+      - x11
+      - wayland
+      - opengl
+      - pulseaudio
+      - joystick
+      - home
+      - desktop
+      - desktop-legacy
+      - unity7
   m64py:
-    desktop: mupen64plus.desktop
-    command: bin/m64py
+    desktop: share/applications/m64plus.desktop
+    command: desktop-launch ${SNAP}/bin/m64py
     plugs:
       - x11
       - wayland
@@ -32,12 +44,13 @@ apps:
       - unity7
 
 parts:
+  ### Core and assets
   mupen64plus-core:
     plugin: make
     #source: https://github.com/mupen64plus/mupen64plus-core.git
     source: https://github.com/iAmSomeone2/mupen64plus-core.git
     source-type: git
-    source-tag: '2.5.9'
+    # source-tag: '2.5.9'
     source-depth: 1
     build-packages:
       - nasm
@@ -119,12 +132,38 @@ parts:
       - libopencv-imgproc3.2
       - libopencv-videoio3.2
       - libswscale4
+      - libpulse0
     override-build: |
       cd projects/unix
       export OPENCV=1
-      #export PREFIX="/root/parts/mupen64plus-core/install/usr/local"
+      export PREFIX="/root/parts/mupen64plus-core/install/usr/local"
       make all -j$(nproc)
       make install
+    #filesets: 
+    #  installDir: [ etc/, lib/, usr/, var/, usr/local, -usr/local/man]
+    #stage:
+    #  - $installDir
+    #prime:
+    #  - $installDir
+
+  mupen64plus-assets:
+    plugin: dump
+    source: .
+    source-type: local
+    organize: 
+      'data/*.svg' : images/
+      'mupen64plus.desktop' : share/applications/m64plus.desktop
+    filesets: 
+      images: [images/]
+      dsktpFile: [share/applications/m64plus.desktop]
+    stage:
+      - $images
+      - $dsktpFile
+    prime:
+      - $images
+      - $dsktpFile
+
+  ### Mupen64Plus plugins
   mupen64plus-video-glide64:
     after:
       - mupen64plus-core
@@ -135,9 +174,16 @@ parts:
     source-depth: 1
     override-build: |
       cd projects/unix
-      #export PREFIX="/root/parts/mupen64plus-video-glide64/install/usr/local"
+      export PREFIX="/root/parts/mupen64plus-video-glide64/install/usr/local"
       make all -j$(nproc)
       make install
+    #filesets: 
+    #  installDir: [ etc/, lib/, usr/, var/, usr/local, -usr/local/man]
+    #stage:
+    #  - $installDir
+    #prime:
+    #  - $installDir
+
   mupen64plus-video-glide64mk2:
     after:
         - mupen64plus-core
@@ -154,9 +200,16 @@ parts:
       - libboost-filesystem1.65.1
     override-build: |
       cd projects/unix
-      #export PREFIX="/root/parts/mupen64plus-video-glide64mk2/install/usr/local"
+      export PREFIX="/root/parts/mupen64plus-video-glide64mk2/install/usr/local"
       make all -j$(nproc)
       make install
+    #filesets: 
+    #  installDir: [ etc/, lib/, usr/, var/, usr/local, -usr/local/man]
+    #stage:
+    #  - $installDir
+    #prime:
+    #  - $installDir
+
   mupen64plus-video-rice:
     after:
       - mupen64plus-core
@@ -167,9 +220,16 @@ parts:
     source-depth: 1
     override-build: |
       cd projects/unix
-      #export PREFIX="/root/parts/mupen64plus-video-rice/install/usr/local"
+      export PREFIX="/root/parts/mupen64plus-video-rice/install/usr/local"
       make all -j$(nproc)
       make install
+    #filesets: 
+    #  installDir: [ etc/, lib/, usr/, var/, usr/local, -usr/local/man]
+    #stage:
+    #  - $installDir
+    #prime:
+    #  - $installDir
+
   mupen64plus-video-z64:
     after:
       - mupen64plus-core
@@ -184,22 +244,16 @@ parts:
       - libglew2.0
     override-build: |
       cd projects/unix
-      #export PREFIX="/root/parts/mupen64plus-video-z64/install/usr/local"
+      export PREFIX="/root/parts/mupen64plus-video-z64/install/usr/local"
       make all -j$(nproc)
       make install
-  mupen64plus-ui-console:
-    after:
-      - mupen64plus-core
-    plugin: make
-    source: https://github.com/mupen64plus/mupen64plus-ui-console.git
-    source-type: git
-    source-tag: '2.5.9'
-    source-depth: 1
-    override-build: |
-      cd projects/unix
-      #export PREFIX="/root/parts/mupen64plus-ui-console/install/usr/local"
-      make all -j$(nproc)
-      make install
+    #filesets: 
+    #  installDir: [ etc/, lib/, usr/, var/, usr/local, -usr/local/man]
+    #stage:
+    #  - $installDir
+    #prime:
+    #  - $installDir
+
   mupen64plus-rsp-z64:
     after:
       - mupen64plus-core
@@ -210,9 +264,16 @@ parts:
     source-depth: 1
     override-build: |
       cd projects/unix
-      #export PREFIX="/root/parts/mupen64plus-rsp-z64/install/usr/local"
+      export PREFIX="/root/parts/mupen64plus-rsp-z64/install/usr/local"
       make all -j$(nproc)
       make install
+    #filesets: 
+    #  installDir: [ etc/, lib/, usr/, var/, usr/local, -usr/local/man]
+    #stage:
+    #  - $installDir
+    #prime:
+    #  - $installDir
+
   mupen64plus-rsp-hle:
     after:
       - mupen64plus-core
@@ -223,9 +284,16 @@ parts:
     source-depth: 1
     override-build: |
       cd projects/unix
-      #export PREFIX="/root/parts/mupen64plus-rsp-hle/install/usr/local"
+      export PREFIX="/root/parts/mupen64plus-rsp-hle/install/usr/local"
       make all -j$(nproc)
       make install
+    #filesets: 
+    #  installDir: [ etc/, lib/, usr/, var/, usr/local, -usr/local/man]
+    #stage:
+    #  - $installDir
+    #prime:
+    #  - $installDir
+
   mupen64plus-rsp-cxd4:
     after:
         - mupen64plus-core
@@ -236,9 +304,16 @@ parts:
     source-depth: 1
     override-build: |
       cd projects/unix
-      #export PREFIX="/root/parts/mupen64plus-rsp-cxd4/install/usr/local"
+      export PREFIX="/root/parts/mupen64plus-rsp-cxd4/install/usr/local"
       make all -j$(nproc)
       make install
+    #filesets: 
+    #  installDir: [ etc/, lib/, usr/, var/, usr/local, -usr/local/man]
+    #stage:
+    #  - $installDir
+    #prime:
+    #  - $installDir
+
   mupen64plus-audio-sdl:
     after:
       - mupen64plus-core
@@ -253,9 +328,16 @@ parts:
       - libspeexdsp1
     override-build: |
       cd projects/unix
-      #export PREFIX="/root/parts/mupen64plus-audio-sdl/install/usr/local"
+      export PREFIX="/root/parts/mupen64plus-audio-sdl/install/usr/local"
       make all -j$(nproc)
       make install
+    #filesets: 
+    #  installDir: [ etc/, lib/, usr/, var/, usr/local, -usr/local/man]
+    #stage:
+    #  - $installDir
+    #prime:
+    #  - $installDir
+
   mupen64plus-input-sdl:
     after:
       - mupen64plus-core
@@ -266,9 +348,16 @@ parts:
     source-depth: 1
     override-build: |
       cd projects/unix
-      #export PREFIX="/root/parts/mupen64plus-input-sdl/install/usr/local"
+      export PREFIX="/root/parts/mupen64plus-input-sdl/install/usr/local"
       make all -j$(nproc)
       make install
+    #filesets: 
+    #  installDir: [ etc/, lib/, usr/, var/, usr/local, -usr/local/man]
+    #stage:
+    #  - $installDir
+    #prime:
+    #  - $installDir
+
   mupen64plus-video-arachnoid:
     after:
       - mupen64plus-core
@@ -279,9 +368,61 @@ parts:
     source-depth: 1
     override-build: |
       cd projects/unix
-      #export PREFIX="/root/parts/mupen64plus-video-arachnoid/install/usr/local"
+      export PREFIX="/root/parts/mupen64plus-video-arachnoid/install/usr/local"
       make all -j$(nproc)
       make install
+    #filesets: 
+    #  installDir: [ etc/, lib/, usr/, var/, usr/local, -usr/local/man]
+    #stage:
+    #  - $installDir
+    #prime:
+    #  - $installDir
+
+  ### Parts needed for the UI
+  mupen64plus-ui-console:
+    after:
+      - mupen64plus-core
+    plugin: make
+    source: https://github.com/mupen64plus/mupen64plus-ui-console.git
+    source-type: git
+    source-tag: '2.5.9'
+    source-depth: 1
+    override-build: |
+      cd projects/unix
+      export PREFIX="/root/parts/mupen64plus-ui-console/install/usr/local"
+      make all -j$(nproc)
+      make install
+    #filesets: 
+    #  installDir: [ etc/, lib/, usr/, var/, usr/local, -usr/local/man]
+    #stage:
+    #  - $installDir
+    #prime:
+    #  - $installDir
+
+  #### GUI stuff is from here to the end.
+  desktop-qt5:
+    plugin: make
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-type: git
+    source-depth: 1
+    source-subdir: qt
+    make-parameters: ["FLAVOR=qt5"]
+    build-packages:
+      - qtbase5-dev
+      - dpkg-dev
+    stage-packages:
+      - libxkbcommon0
+      - ttf-ubuntu-font-family
+      - dmz-cursor-theme
+      - light-themes
+      - adwaita-icon-theme
+      - gnome-themes-standard
+      - shared-mime-info
+      - libqt5gui5
+      - libgdk-pixbuf2.0-0
+      - libqt5svg5 # for loading icon themes which are svg
+      - try: [appmenu-qt5]
+      - locales-all
 
   pysdl2:
     after:
@@ -296,6 +437,7 @@ parts:
     after:
       - mupen64plus-core
       - pysdl2
+      - desktop-qt5
     plugin: python
     python-version: python3
     source: https://github.com/mupen64plus/mupen64plus-ui-python.git
@@ -307,14 +449,15 @@ parts:
     python-packages:
       - PyQt5
     build-packages:
-      - python-pyqt5
+      - python3-pyqt5
       - pyqt5-dev-tools
-      - python-pyqt5.qtopengl
+      - python3-pyqt5.qtopengl
       - libsdl2-dev
     stage-packages: 
       - libegl1
       - libqt5core5a
       - libqt5opengl5
+      - libqt5x11extras5 
       - libatk-bridge2.0-0
       - libatspi2.0-0
       - libcairo-gobject2
@@ -330,3 +473,4 @@ parts:
       - libxkbcommon-x11-0
       - libxcb-xkb1
       - python3-pyqt5
+      - python3-pyqt5.qtopengl
